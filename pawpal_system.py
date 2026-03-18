@@ -49,43 +49,57 @@ class Pet:
 
 
 @dataclass
-class Constraint:
+class BlockTime:
     constraint_name: str
-    description: Optional[str] = None
-    priority: Optional[str] = None
     block_start: Optional[str] = None
     block_end: Optional[str] = None
-    preferred_start: Optional[str] = None
-    preferred_end: Optional[str] = None
-
-    def remove_constraint(self):
-        pass
+    priority: Optional[int] = None
+    description: Optional[str] = None
 
     def set_block_time(self, start_time: str, end_time: str):
-        pass
+        self.block_start = start_time
+        self.block_end = end_time
 
-    def set_preferred_time(self, start_time: str, end_time: str):
-        pass
-
-    def change_priority(self, priority: str):
-        pass
+    def change_priority(self, priority: int):
+        self.priority = priority
 
     def set_description(self, description: str):
-        pass
+        self.description = description
+
+
+@dataclass
+class PreferredTime:
+    constraint_name: str
+    preferred_start: Optional[str] = None
+    preferred_end: Optional[str] = None
+    priority: Optional[int] = None
+    description: Optional[str] = None
+
+    def set_preferred_time(self, start_time: str, end_time: str):
+        self.preferred_start = start_time
+        self.preferred_end = end_time
+
+    def change_priority(self, priority: int):
+        self.priority = priority
+
+    def set_description(self, description: str):
+        self.description = description
 
 
 class Owner:
     def __init__(self, name: str):
         self.name = name
         self.pets: list[Pet] = []
-        self.constraints: list[Constraint] = []
+        self.block_times: list[BlockTime] = []
+        self.preferred_times: list[PreferredTime] = []
 
     def change_name(self, new_name: str):
         self.name = new_name
 
     def delete_owner(self):
         self.pets.clear()
-        self.constraints.clear()
+        self.block_times.clear()
+        self.preferred_times.clear()
 
     def add_pet(self, pet: Pet):
         self.pets.append(pet)
@@ -94,10 +108,17 @@ class Owner:
         if pet in self.pets:
             self.pets.remove(pet)
 
-    def add_constraint(self, constraint: Constraint):
-        self.constraints.append(constraint)
+    def add_block_time(self, block_time: BlockTime):
+        self.block_times.append(block_time)
 
-    def delete_constraint(self, constraint: Constraint):
-        if constraint in self.constraints:
-            self.constraints.remove(constraint)
+    def delete_block_time(self, block_time: BlockTime):
+        if block_time in self.block_times:
+            self.block_times.remove(block_time)
+
+    def add_preferred_time(self, preferred_time: PreferredTime):
+        self.preferred_times.append(preferred_time)
+
+    def delete_preferred_time(self, preferred_time: PreferredTime):
+        if preferred_time in self.preferred_times:
+            self.preferred_times.remove(preferred_time)
 
