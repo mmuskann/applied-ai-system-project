@@ -3,14 +3,24 @@ from typing import Optional
 
 
 @dataclass
+class Task:
+    task_name: str
+    description: Optional[str] = None
+    priority: Optional[str] = None
+
+    def set_description(self, description: str):
+        pass
+
+    def set_priority(self, priority: str):
+        pass
+
+
+@dataclass
 class Pet:
     pet_name: str
     age: Optional[int] = None
     type: Optional[str] = None
-    tasks: list["Task"] = field(default_factory=list)
-
-    def remove_pet(self):
-        pass
+    tasks: list[Task] = field(default_factory=list)
 
     def set_age(self, age: int):
         pass
@@ -18,20 +28,10 @@ class Pet:
     def set_type(self, type: str):
         pass
 
-
-@dataclass
-class Task:
-    task_name: str
-    description: Optional[str] = None
-    priority: Optional[str] = None
-
-    def delete_task(self):
+    def add_task(self, task: Task):
         pass
 
-    def set_description(self, description: str):
-        pass
-
-    def set_priority(self, priority: str):
+    def delete_task(self, task: Task):
         pass
 
 
@@ -54,12 +54,6 @@ class Constraint:
     def set_preferred_time(self, start_time: str, end_time: str):
         pass
 
-    def change_block_time(self, start_time: str, end_time: str):
-        pass
-
-    def change_preferred_time(self, start_time: str, end_time: str):
-        pass
-
     def change_priority(self, priority: str):
         pass
 
@@ -76,7 +70,13 @@ class Owner:
     def delete_owner(self):
         pass
 
+    def add_pet(self, pet: Pet):
+        pass
+
     def delete_pet(self, pet: Pet):
+        pass
+
+    def add_constraint(self, constraint: Constraint):
         pass
 
     def change_name(self, new_name: str):
