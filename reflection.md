@@ -7,6 +7,8 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+The three core actions the user should be able to perform are add their pet, add their constraint, and add their pet care task. So, the classes would be the pet class, constraint class and task class. Pet class is reponsible for the pet's information such as name, etc. The constraint class is to allow the owner to add certains times they are not available, their preferences, and prioirty of task or each pet if they have mutliple. The task class is responsible for putting tasks with the pet object/ making a list of taks.
+
 **b. Design changes**
 
 - Did your design change during implementation?
