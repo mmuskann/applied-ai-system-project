@@ -67,17 +67,24 @@ class Owner:
         self.pets: list[Pet] = []
         self.constraints: list[Constraint] = []
 
+    def change_name(self, new_name: str):
+        self.name = new_name
+
     def delete_owner(self):
-        pass
+        self.pets.clear()
+        self.constraints.clear()
 
     def add_pet(self, pet: Pet):
-        pass
+        self.pets.append(pet)
 
     def delete_pet(self, pet: Pet):
-        pass
+        if pet in self.pets:
+            self.pets.remove(pet)
 
     def add_constraint(self, constraint: Constraint):
-        pass
+        self.constraints.append(constraint)
 
-    def change_name(self, new_name: str):
-        pass
+    def delete_constraint(self, constraint: Constraint):
+        if constraint in self.constraints:
+            self.constraints.remove(constraint)
+
