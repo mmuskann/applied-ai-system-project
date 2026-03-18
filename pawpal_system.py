@@ -23,16 +23,17 @@ class Pet:
     tasks: list[Task] = field(default_factory=list)
 
     def set_age(self, age: int):
-        pass
+        self.age = age
 
     def set_type(self, type: str):
-        pass
+        self.type = type
 
     def add_task(self, task: Task):
-        pass
+        self.tasks.append(task)
 
     def delete_task(self, task: Task):
-        pass
+        if task in self.tasks:
+            self.tasks.remove(task)
 
 
 @dataclass
