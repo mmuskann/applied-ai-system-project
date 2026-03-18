@@ -66,6 +66,8 @@ Task Class {
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
+Yes, my design changed during implementation. One change was adding the add_pet method to the owner instead of the pet. I made it because a pet should not be able to remove it self. Also, the remove_pet method should be in the owner class. Another change is, there is now a add_task method to the pet so each pet is assigned a task. Also, delete task logic should be move to pet because it needs to go throught the pet it is assinged to.
+
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
