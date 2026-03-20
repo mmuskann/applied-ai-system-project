@@ -122,3 +122,15 @@ class Owner:
         if preferred_time in self.preferred_times:
             self.preferred_times.remove(preferred_time)
 
+
+class Scheduler:
+    def __init__(self, owner: Owner):
+        self.owner = owner
+
+    def get_all_tasks(self) -> list[tuple[Pet, Task]]:
+        all_tasks = []
+        for pet in self.owner.pets:
+            for task in pet.tasks:
+                all_tasks.append((pet, task))
+        return all_tasks
+
