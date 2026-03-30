@@ -42,22 +42,6 @@ pip install -r requirements.txt
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
 
-## Testing PawPal+
-
-### Running the tests
-
-```bash
-python -m pytest
-```
-
-### What's being tested
-
-The tests are all in `tests/test_pawpal.py`. Here's a quick breakdown:
-
-- **Task** — checks that tasks start with the right defaults and that the setter methods actually update them
-- **Pet** — makes sure you can add and remove tasks without issues, including when you try to remove something that was never added
-- **Owner** — covers adding/removing pets, setting availability, and wiping all the owner's data clean
-- **Scheduler** — the big one. Tests pulling tasks from multiple pets, sorting by time, completing daily tasks (which resets them for the next day), and catching scheduling conflicts
 
 ## Smarter Scheduling
 
@@ -70,6 +54,23 @@ Once the basic structure was done I went back and built out the scheduling side 
 **Recurring tasks** — this one took the most thought. When you call `mark_task_complete()` on a daily or weekly task it automatically makes a new copy for the next time. It uses `timedelta` to figure out the date, so daily gets +1 day and weekly gets +7. Tasks that don't repeat just get marked done and thats it.
 
 **Conflict warnings** — `get_conflict_warnings()` scans the schedule and looks for any two tasks at the exact same time. Instead of crashing it just returns a warning message so you know what to fix. If theres no conflicts it returns an empty list.
+
+## Testing PawPal+
+
+### Running the tests
+
+```bash
+python -m pytest
+```
+
+### What's being tested
+
+The tests are all in `tests/test_pawpal.py`
+
+- **Task** — checks that tasks start with the right defaults and that the setter methods actually update them
+- **Pet** — makes sure you can add and remove tasks without issues, including when you try to remove something that was never added
+- **Owner** — covers adding/removing pets, setting availability, and wiping all the owner's data clean
+- **Scheduler** — tests pulling tasks from multiple pets, sorting by time, completing daily tasks (which resets them for the next day), and catching scheduling conflicts
 
 ### Confidence Level
 
