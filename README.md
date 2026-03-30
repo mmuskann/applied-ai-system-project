@@ -76,3 +76,13 @@ Once the basic structure was done I went back and built out the scheduling side 
 4 out of 5 stars
 
 The unit tests cover all major classes and a wide range of edge cases (None values, multi-pet scenarios, recurring tasks, conflict detection). Confidence is high for the core scheduling logic. One star is held back because there are no integration or UI-level tests for the Streamlit `app.py` layer, so end-to-end behavior remains manually verified.
+
+### Demo
+
+![PawPal+ screenshot 1](1.png)
+![PawPal+ screenshot 2](2.png)
+![PawPal+ screenshot 3](3.png)
+![PawPal+ screenshot 4](4.png)
+![PawPal+ screenshot 5](5.png)
+![PawPal+ screenshot 6](6.png)
+
