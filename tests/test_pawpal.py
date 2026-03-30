@@ -486,3 +486,119 @@ def test_multiple_conflict_slots():
     assert "08:00" in conflicts
     assert "12:00" in conflicts
     assert "18:00" not in conflicts
+
+
+# --- Duration field ---
+
+def test_task_duration_default_none():
+    t = Task(task_name="Walk")
+    assert t.duration is None
+
+
+def test_task_set_duration():
+    t = Task(task_name="Walk")
+    t.set_duration(45)
+    assert t.duration == 45
+
+
+# --- Priority as secondary sort key ---
+
+def test_sort_by_priority_when_times_equal():
+    """When two tasks share the same start time, higher priority (lower number) comes first."""
+    _, _, scheduler = make_owner_with_tasks(
+        ("Meds",  "08:00", 3),
+        ("Feed",  "08:00", 1),
+        ("Walk",  "08:00", 2),
+    )
+    result = scheduler.get_all_tasks_sorted()
+    names = [t.task_name for _, t in result]
+    assert names == ["Feed", "Walk", "Meds"]
+
+
+def test_sort_priority_none_last_within_same_time():
+    """Tasks with no priority sort after prioritized tasks at the same time."""
+    _, _, scheduler = make_owner_with_tasks(
+        ("NoPriority", "08:00", None),
+        ("High",       "08:00", 1),
+    )
+    result = scheduler.get_all_tasks_sorted()
+    assert result[0][1].task_name == "High"
+    assert result[1][1].task_name == "NoPriority"
+
+
+# --- Duration-based overlap conflict detection ---
+
+def test_overlap_conflict_detected_via_duration():
+    """A 60-minute task starting at 08:00 overlaps a 30-minute task starting at 08:30."""
+    owner = Owner("Jordan")
+    pet = Pet(pet_name="Mochi")
+    long_task = Task(task_name="Long", time="08:00")
+    long_task.set_duration(60)
+    short_task = Task(task_name="Short", time="08:30")
+    short_task.set_duration(30)
+    pet.add_task(long_task)
+    pet.add_task(short_task)
+    owner.add_pet(pet)
+    scheduler = Scheduler(owner)
+    conflicts = scheduler.get_time_conflicts()
+    assert len(conflicts) > 0
+
+
+def test_no_overlap_when_tasks_are_sequential():
+    """A 30-minute task at 08:00 and a 30-minute task at 08:30 do NOT overlap."""
+    owner = Owner("Jordan")
+    pet = Pet(pet_name="Mochi")
+    t1 = Task(task_name="First", time="08:00")
+    t1.set_duration(30)
+    t2 = Task(task_name="Second", time="08:30")
+    t2.set_duration(30)
+    pet.add_task(t1)
+    pet.add_task(t2)
+    owner.add_pet(pet)
+    scheduler = Scheduler(owner)
+    assert scheduler.get_time_conflicts() == {}
+
+
+def test_existing_exact_time_conflict_still_detected():
+    """Backward compat: two tasks at the exact same time still conflict (no duration)."""
+    _, _, scheduler = make_owner_with_tasks(
+        ("A", "09:00", 1),
+        ("B", "09:00", 2),
+    )
+    conflicts = scheduler.get_time_conflicts()
+    assert "09:00" in conflicts
+    assert len(conflicts["09:00"]) == 2
+
+
+# --- set_task_name ---
+
+def test_set_task_name():
+    t = Task(task_name="OldName")
+    t.set_task_name("NewName")
+    assert t.task_name == "NewName"
+
+
+# --- get_schedule_reasoning ---
+
+def test_schedule_reasoning_returns_one_entry_per_task():
+    _, _, scheduler = make_owner_with_tasks(
+        ("Walk",  "08:00", 1),
+        ("Feed",  "12:00", 2),
+    )
+    reasons = scheduler.get_schedule_reasoning()
+    assert len(reasons) == 2
+
+
+def test_schedule_reasoning_no_tasks_returns_empty():
+    owner = Owner("Jordan")
+    scheduler = Scheduler(owner)
+    assert scheduler.get_schedule_reasoning() == []
+
+
+def test_schedule_reasoning_untimed_task_mentions_end():
+    _, _, scheduler = make_owner_with_tasks(
+        ("NoTime", None, 1),
+    )
+    reasons = scheduler.get_schedule_reasoning()
+    assert len(reasons) == 1
+    assert "end" in reasons[0].lower() or "no scheduled time" in reasons[0].lower()

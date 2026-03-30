@@ -44,20 +44,20 @@ pip install -r requirements.txt
 
 ## Testing PawPal+
 
-### Run the tests
+### Running the tests
 
 ```bash
 python -m pytest
 ```
 
-### What the tests cover
+### What's being tested
 
-The test suite in `tests/test_pawpal.py` covers the core scheduling logic across all major classes:
+The tests are all in `tests/test_pawpal.py`. Here's a quick breakdown:
 
-- **Task** — default attribute values, and all setter methods (`set_description`, `set_priority`, `set_time`, `set_frequency`, `set_completed`)
-- **Pet** — adding/deleting tasks, `task_count()`, and edge cases like deleting a task that isn't in the list
-- **Owner** — adding/deleting pets, block times, and preferred times; `delete_owner()` clearing all data; `change_name()`
-- **Scheduler** — `get_all_tasks()` across zero, one, and multiple pets; `get_all_tasks_sorted()` for chronological ordering with `None` times sorted last; `complete_daily_task()` for recurring task logic (marks done, spawns a new identical task, and skips non-daily tasks); `get_time_conflicts()` for detecting duplicate time slots within and across pets
+- **Task** — checks that tasks start with the right defaults and that the setter methods actually update them
+- **Pet** — makes sure you can add and remove tasks without issues, including when you try to remove something that was never added
+- **Owner** — covers adding/removing pets, setting availability, and wiping all the owner's data clean
+- **Scheduler** — the big one. Tests pulling tasks from multiple pets, sorting by time, completing daily tasks (which resets them for the next day), and catching scheduling conflicts
 
 ## Smarter Scheduling
 

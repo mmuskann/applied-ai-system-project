@@ -12,6 +12,7 @@ class Task:
     frequency: Optional[str] = None
     completed: bool = False
     due_date: Optional[date] = None
+    duration: Optional[int] = None  # task duration in minutes
 
     def set_description(self, description: str):
         self.description = description
@@ -30,6 +31,12 @@ class Task:
 
     def set_due_date(self, due_date: date):
         self.due_date = due_date
+
+    def set_duration(self, duration: int):
+        self.duration = duration
+
+    def set_task_name(self, task_name: str):
+        self.task_name = task_name
 
 
 @dataclass
@@ -156,7 +163,7 @@ class Scheduler:
         """
         return sorted(
             self.get_all_tasks(),
-            key=lambda pair: (pair[1].time is None, pair[1].time),
+            key=lambda pair: (pair[1].time is None, pair[1].time, pair[1].priority is None, pair[1].priority or 0),
         )
 
     def get_all_tasks_sorted(self) -> list[tuple[Pet, Task]]:
@@ -237,14 +244,35 @@ class Scheduler:
         return next_task
 
     def get_time_conflicts(self) -> dict[str, list[tuple[Pet, Task]]]:
-        """Return a dict mapping time strings to lists of (Pet, Task) pairs
-        that share that time. Only times with more than one task are included."""
-        time_map: dict[str, list[tuple[Pet, Task]]] = {}
+        """Return a dict mapping time strings to lists of (Pet, Task) pairs whose
+        scheduled windows overlap. Each task's window is [start, start + duration);
+        tasks with no duration get a 1-minute effective window so that two tasks
+        at the exact same start time are always reported as conflicting.
+        Only times/groups with more than one task are included."""
+        timed_tasks: list[tuple[Pet, Task, int, int]] = []
         for pet, task in self.get_all_tasks():
             if task.time is None:
                 continue
-            time_map.setdefault(task.time, []).append((pet, task))
-        return {t: pairs for t, pairs in time_map.items() if len(pairs) > 1}
+            h, m = map(int, task.time.split(":"))
+            start = h * 60 + m
+            dur = task.duration if task.duration else 1
+            timed_tasks.append((pet, task, start, start + dur))
+
+        conflicts: dict[str, list[tuple[Pet, Task]]] = {}
+        n = len(timed_tasks)
+        for i in range(n):
+            pet_i, task_i, start_i, end_i = timed_tasks[i]
+            for j in range(i + 1, n):
+                pet_j, task_j, start_j, end_j = timed_tasks[j]
+                if start_i < end_j and start_j < end_i:
+                    key = task_i.time if start_i <= start_j else task_j.time
+                    group = conflicts.setdefault(key, [])
+                    if (pet_i, task_i) not in group:
+                        group.append((pet_i, task_i))
+                    if (pet_j, task_j) not in group:
+                        group.append((pet_j, task_j))
+
+        return conflicts
 
     def get_conflict_warnings(self) -> list[str]:
         """Return human-readable warning strings for every conflicting time slot.
@@ -265,8 +293,8 @@ class Scheduler:
                 f"'{task.task_name}' ({pet.pet_name})" for pet, task in pairs
             )
             warnings.append(
-                f"WARNING: {len(pairs)} tasks share the same time {time_slot} — {names}. "
-                f"Consider rescheduling one of them."
+                f"WARNING: {len(pairs)} tasks have overlapping schedules around {time_slot} — {names}. "
+                f"Consider rescheduling or shortening one of them."
             )
         return warnings
 
@@ -277,4 +305,49 @@ class Scheduler:
     def get_tasks_by_status(self, completed: bool) -> list[tuple[Pet, Task]]:
         """Return all (Pet, Task) pairs whose completed flag matches the given value."""
         return [(p, t) for p, t in self.get_all_tasks() if t.completed == completed]
+
+    def get_schedule_reasoning(self) -> list[str]:
+        """Return one plain-English reason per task explaining why it appears
+        in its position in the sorted schedule."""
+        sorted_tasks = self.get_all_tasks_sorted()
+        reasons: list[str] = []
+        conflicts = self.get_time_conflicts()
+        conflict_times = set(conflicts.keys())
+
+        for i, (pet, task) in enumerate(sorted_tasks):
+            name = task.task_name
+            dur_note = f" ({task.duration} min)" if task.duration else ""
+
+            if task.time is None:
+                reasons.append(
+                    f"**{name}** has no scheduled time, so it appears at the end."
+                )
+                continue
+
+            in_conflict = task.time in conflict_times and any(
+                t is task for _, t in conflicts[task.time]
+            )
+
+            if i == 0:
+                reason = f"**{name}** is first — earliest start time ({task.time}{dur_note})."
+            else:
+                prev_pet, prev_task = sorted_tasks[i - 1]
+                if prev_task.time == task.time:
+                    reason = (
+                        f"**{name}** (priority {task.priority}) follows "
+                        f"**{prev_task.task_name}** (priority {prev_task.priority}) — "
+                        f"same start time {task.time}; higher priority goes first."
+                    )
+                else:
+                    reason = (
+                        f"**{name}** is scheduled at {task.time}{dur_note}, "
+                        f"after {prev_task.task_name} ({prev_task.time})."
+                    )
+
+            if in_conflict:
+                reason += f" ⚠️ *Overlaps with another task — consider rescheduling.*"
+
+            reasons.append(reason)
+
+        return reasons
 
