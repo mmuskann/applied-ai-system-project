@@ -82,6 +82,10 @@ Yes, my design changed during implementation. One change was adding the add_pet 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+One tradeoff my schedular makes is that it only checks for exact time matches when detecting conflicts. So if two tasks are both set to "08:00" it will flag that as a conflict, but if one task is at "07:00" and another is at "07:20" it wont catch that even if they would overlap in real life.
+
+I decided to do it this way becuase the Task class only stores a start time and not a duration. To actually detect overlaps you would need to know how long each task takes, and adding that felt like too much for now. For a basic pet care schedule most tasks like feeding or a walk are already treated as fixed points in the day anyway, so exact match detection is good enough to catch the most common mistake of putting two things at the same time.
+
 ---
 
 ## 3. AI Collaboration
