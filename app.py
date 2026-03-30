@@ -99,21 +99,28 @@ if st.button("Generate schedule"):
     owner.add_pet(pet)
 
     scheduler = Scheduler(owner=owner)
-    all_tasks = scheduler.get_all_tasks()
+    sorted_tasks = scheduler.get_all_tasks_sorted()
+    conflicts = scheduler.get_time_conflicts()
 
-    if all_tasks:
-        st.success(f"Schedule for {owner.name}'s pet {pet.pet_name} ({pet.type}) — {pet.task_count()} task(s):")
+    if conflicts:
+        st.error("⚠️ Schedule Conflicts Detected")
+        for time_slot, conflicting in conflicts.items():
+            names = ", ".join(f"**{t.task_name}** ({p.pet_name})" for p, t in conflicting)
+            st.warning(f"🕐 **{time_slot}** — multiple tasks overlap: {names}. Consider rescheduling one of these tasks.")
+
+    if sorted_tasks:
+        st.success(f"Schedule for {owner.name}'s pet {pet.pet_name} ({pet.type}) — {pet.task_count()} task(s), sorted by time:")
         st.table([
             {
                 "Pet": p.pet_name,
                 "Task": t.task_name,
-                "Time": t.time,
-                "Priority": t.priority,
-                "Frequency": t.frequency,
+                "Time": t.time if t.time else "—",
+                "Priority": t.priority if t.priority else "—",
+                "Frequency": t.frequency if t.frequency else "—",
                 "Description": t.description or "",
-                "Completed": t.completed,
+                "Done": "✅" if t.completed else "⬜",
             }
-            for p, t in all_tasks
+            for p, t in sorted_tasks
         ])
     else:
         st.warning("No tasks to schedule. Add tasks above first.")
