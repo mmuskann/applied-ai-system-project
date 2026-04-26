@@ -104,7 +104,8 @@ python -m streamlit run app.py
 
 ## Demo Interaction
 
-Loom video link: #put link here 
+Loom video link: https://www.loom.com/share/b8c27338869d4c079aad24b9800f347b
+
 
 Screenshot walkthrough:
 ![AI Advice](assets/demo1.png)
