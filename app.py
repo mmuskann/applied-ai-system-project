@@ -215,6 +215,12 @@ st.divider()
 
 # ── Schedule generation ───────────────────────────────────────────────────────
 st.subheader("Generate Schedule")
+enable_ai_advice = st.checkbox("🤖 Include AI schedule advice", value=False)
+
+ai_goal = st.text_input(
+    "AI goal",
+    value="Find schedule conflicts and suggest a better pet care plan."
+)
 
 if st.button("📅 Build schedule", use_container_width=True):
     owner_pet_tasks = [e for e in st.session_state.tasks if e["owner"] == view_owner]
@@ -322,3 +328,22 @@ if st.button("📅 Build schedule", use_container_width=True):
                 st.markdown("**Per-task reasoning:**")
                 for line in reasoning:
                     st.markdown(f"- {line}")
+
+        # ── AI Schedule Assistant ────────────────────────────────────────────
+        if enable_ai_advice:
+            st.divider()
+            st.subheader("🤖 AI Schedule Assistant")
+
+            with st.spinner("Retrieving pet-care rules and generating AI advice..."):
+                ai_advice, ai_debug = build_ai_schedule_advice(
+                    owner=owner,
+                    scheduler=scheduler,
+                    user_goal=ai_goal,
+                )
+
+            st.markdown(ai_advice)
+
+            with st.expander("🔎 RAG context used by the AI", expanded=False):
+                st.markdown("The AI retrieved these rules before answering:")
+                for rule in ai_debug.get("retrieved_rules", []):
+                    st.markdown(f"- **{rule['id']}**: {rule['text']}")
